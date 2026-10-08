@@ -189,7 +189,11 @@ window.__ModuleLoader__.load({
           setBusy(true);setStatus('');
           const next={...(policy||{currency:'CNY',input:null,output:null,cacheRead:null,cacheWrite:null}),type};
           if(nextName)next.displayName=nextName;else delete next.displayName;
-          try { saved(await invoke('savePolicy',model.route,next));setStatus(t('saved')); }
+          try {
+            const nextPolicies=await invoke('savePolicy',model.route,next);
+            if((nextPolicies[model.route]?.displayName||'')!==nextName)throw new Error('显示名称尚未保存，请重启 DSH 后重试');
+            saved(nextPolicies);setStatus(t('saved'));
+          }
           catch(error){setDisplayName(previous);setStatus(error.message);}
           finally{setBusy(false);}
         };
