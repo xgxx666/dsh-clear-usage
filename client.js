@@ -13,7 +13,7 @@ window.__ModuleLoader__.load({
       today: '今天', month: '本月', allTime: '全部', custom: '自定义', all: '全部模型', local: '本地模型', api: 'API 模型', unknown: '待设置类型',
       loading: '正在读取用量…', error: '读取失败，请重试', refresh: '刷新', total: '消耗 token',
       heat: 'Token 活动', models: '模型用量', share: '占比', empty: '这段时间没有已记录的用量',
-      types: '模型类型', typeHint: '类型用于筛选，点击自动保存；删除只移出管理列表，历史用量保留。', unknownShort: '待确认', localShort: '本地', apiShort: 'API', saving: '保存中…', saved: '已保存', delete: '删除', restore: '恢复', removed: '已删除的模型',
+      types: '模型类型', typeHint: '类型用于筛选，点击自动保存；可设置显示名称。用量列表中“待设置类型”可点选后跳转到对应模型。删除只移出管理列表，历史用量保留。', unknownShort: '待确认', localShort: '本地', apiShort: 'API', saving: '保存中…', saved: '已保存', delete: '删除', restore: '恢复', removed: '已删除的模型', displayName: '显示名称', chooseType: '点击选择本地或 API',
       startDate: '开始日期', endDate: '结束日期', query: '查询', invalidDates: '请选择有效日期，结束日期不能早于开始日期。',
       modelType: '模型类型',
       missing: '部分记录未提供可用的 token 数据，已记录用量可能不完整', failed: '部分会话读取失败，当前结果不完整',
@@ -40,7 +40,8 @@ window.__ModuleLoader__.load({
       .cu-calendar-scroll::-webkit-scrollbar{height:5px}.cu-calendar-scroll::-webkit-scrollbar-thumb{border-radius:5px;background:var(--dsw-alias-border-l2)}
       .cu-breakdown{display:grid;gap:22px}.cu-ring{width:190px;height:190px;margin:4px auto 0;display:grid;place-items:center;position:relative;flex-shrink:0}.cu-ring-chart{display:block;width:190px;height:190px}.cu-ring-center{z-index:1;position:absolute;text-align:center;font-size:23px;font-weight:600}.cu-ring-center small{display:block;font-size:12px;font-weight:400;color:var(--dsw-alias-label-secondary);margin-top:4px}
       .cu-model-list{display:grid}.cu-model-row{border-bottom:1px solid var(--dsw-alias-border-l1);padding:12px 0}.cu-model-row:last-child{border-bottom:0}.cu-model-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:start}.cu-model-name{font-size:12px;font-weight:500;line-height:1.5;overflow-wrap:anywhere}.cu-model-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--cu-model-color);margin-right:8px}.cu-model-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:6px 0 0 16px}.cu-model-sub{font-size:11px;color:var(--dsw-alias-label-secondary);overflow-wrap:anywhere}.cu-model-number{text-align:right;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}.cu-model-number small{font-size:10px;font-weight:400;color:var(--dsw-alias-label-secondary);margin-left:4px}.cu-model-badge{font-size:10px;line-height:1.5;border:1px solid var(--dsw-alias-border-l1);border-radius:5px;padding:2px 6px;background:var(--dsw-alias-bg-layer-2);white-space:nowrap}.cu-model-share{margin-left:auto;font-size:11px;color:var(--dsw-alias-label-secondary);white-space:nowrap}
-      .cu-types summary{cursor:pointer;font-size:12px;font-weight:500}.cu-type-list{margin-top:12px;border:1px solid var(--dsw-alias-border-l1);border-radius:12px;padding:0 12px}.cu-type-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;padding:13px 0;border-bottom:1px solid var(--dsw-alias-border-l1)}.cu-type-row:last-child{border-bottom:0}.cu-type-name{font-size:12px;font-weight:500;line-height:1.5;overflow-wrap:anywhere}.cu-type-provider{font-size:11px;color:var(--dsw-alias-label-secondary);margin-top:3px;overflow-wrap:anywhere}.cu-type-options{display:flex;gap:3px;padding:3px;border:1px solid var(--dsw-alias-border-l1);border-radius:9px;background:var(--dsw-alias-bg-layer-2)}.cu-type-options button{border:0;border-radius:6px;background:transparent;padding:5px 8px;font-size:11px;line-height:1.4;color:var(--dsw-alias-label-secondary)}.cu-type-options button[aria-pressed=true]{background:var(--cu-bg);color:var(--dsw-alias-label-primary);font-weight:600;box-shadow:0 1px 4px color-mix(in srgb,var(--dsw-alias-label-primary) 10%,transparent)}.cu-type-status{font-size:10px;text-align:right;color:var(--dsw-alias-label-secondary);margin-top:4px}.cu-warning{color:var(--dsw-alias-state-error-primary);font-size:12px;margin:10px 0}
+      .cu-model-type-link{color:var(--cu-ink);cursor:pointer}.cu-model-type-link:hover{border-color:var(--dsw-alias-border-l2);background:var(--dsw-alias-interactive-bg-hover)}
+      .cu-types summary{cursor:pointer;font-size:12px;font-weight:500}.cu-type-list{margin-top:12px;border:1px solid var(--dsw-alias-border-l1);border-radius:12px;padding:0 12px}.cu-type-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;padding:13px 0;border-bottom:1px solid var(--dsw-alias-border-l1);scroll-margin:28px}.cu-type-row:last-child{border-bottom:0}.cu-type-name{font-size:12px;font-weight:500;line-height:1.5;overflow-wrap:anywhere}.cu-type-provider{font-size:11px;color:var(--dsw-alias-label-secondary);margin-top:3px;overflow-wrap:anywhere}.cu-type-display-name{display:flex;flex-direction:column;gap:3px;width:min(100%,300px);margin-top:7px;font-size:10px;color:var(--dsw-alias-label-secondary)}.cu-display-name-input{width:100%;padding:4px 7px;border:1px solid var(--dsw-alias-border-l1);border-radius:6px;background:var(--cu-bg);font-size:11px}.cu-type-options{display:flex;gap:3px;padding:3px;border:1px solid var(--dsw-alias-border-l1);border-radius:9px;background:var(--dsw-alias-bg-layer-2)}.cu-type-options button{border:0;border-radius:6px;background:transparent;padding:5px 8px;font-size:11px;line-height:1.4;color:var(--dsw-alias-label-secondary)}.cu-type-options button[aria-pressed=true]{background:var(--cu-bg);color:var(--dsw-alias-label-primary);font-weight:600;box-shadow:0 1px 4px color-mix(in srgb,var(--dsw-alias-label-primary) 10%,transparent)}.cu-type-status{font-size:10px;text-align:right;color:var(--dsw-alias-label-secondary);margin-top:4px}.cu-warning{color:var(--dsw-alias-state-error-primary);font-size:12px;margin:10px 0}
       .cu-type-controls{display:flex;align-items:center;gap:8px}.cu-type-delete{border:0;border-radius:6px;padding:6px;background:transparent;font-size:11px;color:var(--dsw-alias-label-secondary)!important}.cu-type-delete:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-state-error-primary)!important}.cu-removed{margin-top:15px}.cu-removed summary{color:var(--dsw-alias-label-secondary)}
       @media(max-width:580px){.cu-breakdown{grid-template-columns:1fr}.cu-ring{margin:0 auto}.cu-top{margin-bottom:16px}.cu-value{font-size:22px}}
     `;
@@ -70,7 +71,7 @@ window.__ModuleLoader__.load({
         add(heatmap.get(row.day),row);
         if(day?row.day!==day:(firstDay&&row.day<firstDay)||(lastDay&&row.day>lastDay))continue;
         add(totals,row);
-        if(!models.has(row.route))models.set(row.route,{route:row.route,provider:row.provider,model:row.model,type:modelType,...zero()});
+        if(!models.has(row.route))models.set(row.route,{route:row.route,provider:row.provider,model:row.model,displayName:policies[row.route]?.displayName||row.model,type:modelType,...zero()});
         add(models.get(row.route),row);
         if(!days.has(row.day))days.set(row.day,{day:row.day,...zero()});
         add(days.get(row.day),row);
@@ -159,6 +160,7 @@ window.__ModuleLoader__.load({
       }
       function ModelPolicy({ model, policy, saved, t, removed=false }) {
         const [type,setType] = React.useState(policy?.type||model.type);
+        const [displayName,setDisplayName] = React.useState(policy?.displayName||'');
         const [status,setStatus] = React.useState('');
         const [busy,setBusy] = React.useState(false);
         const save = async nextType => {
@@ -180,9 +182,21 @@ window.__ModuleLoader__.load({
           catch(error){setStatus(error.message);}
           finally{setBusy(false);}
         };
-        return h('div',{className:'cu-type-row'},h('div',null,h('div',{className:'cu-type-name'},model.model),h('div',{className:'cu-type-provider'},model.provider)),
+        const saveDisplayName = async ()=>{
+          const nextName=displayName.trim();
+          const previous=policy?.displayName||'';
+          if(nextName===previous||busy)return;
+          setBusy(true);setStatus('');
+          const next={...(policy||{currency:'CNY',input:null,output:null,cacheRead:null,cacheWrite:null}),type};
+          if(nextName)next.displayName=nextName;else delete next.displayName;
+          try { saved(await invoke('savePolicy',model.route,next));setStatus(t('saved')); }
+          catch(error){setDisplayName(previous);setStatus(error.message);}
+          finally{setBusy(false);}
+        };
+        return h('div',{className:'cu-type-row',id:`cu-model-type-${encodeURIComponent(model.route)}`},h('div',null,h('div',{className:'cu-type-name'},model.displayName||model.model),h('div',{className:'cu-type-provider'},model.provider),
+            h('label',{className:'cu-type-display-name'},t('displayName'),h('input',{type:'text',className:'cu-display-name-input',value:displayName,placeholder:model.model,maxLength:160,disabled:busy,'aria-label':`${model.displayName||model.model} ${t('displayName')}`,onChange:event=>setDisplayName(event.target.value),onBlur:saveDisplayName,onKeyDown:event=>{if(event.key==='Enter')event.currentTarget.blur();}}))),
           h('div',null,removed?h('button',{type:'button',className:'cu-button','aria-label':`${t('restore')} ${model.model}`,disabled:busy,onClick:()=>setHidden(false)},t('restore')):
-            h('div',{className:'cu-type-controls'},h('div',{className:'cu-type-options',role:'group','aria-label':`${model.model} ${t('modelType')}`},['unknown','local','api'].map(key=>h('button',{key,type:'button','aria-pressed':type===key,'aria-label':`${model.model}：${t(key)}`,disabled:busy,onClick:()=>save(key)},t(`${key}Short`)))),h('button',{type:'button',className:'cu-type-delete','aria-label':`${t('delete')} ${model.model}`,disabled:busy,onClick:()=>setHidden(true)},t('delete'))),
+            h('div',{className:'cu-type-controls'},h('div',{className:'cu-type-options',role:'group','aria-label':`${model.displayName||model.model} ${t('modelType')}`},['unknown','local','api'].map(key=>h('button',{key,type:'button','data-model-type':key,'aria-pressed':type===key,'aria-label':`${model.displayName||model.model}：${t(key)}`,disabled:busy,onClick:()=>save(key)},t(`${key}Short`)))),h('button',{type:'button',className:'cu-type-delete','aria-label':`${t('delete')} ${model.displayName||model.model}`,disabled:busy,onClick:()=>setHidden(true)},t('delete'))),
             (busy||status)&&h('div',{className:'cu-type-status',role:'status'},busy?t('saving'):status)),
         );
       }
@@ -255,6 +269,18 @@ window.__ModuleLoader__.load({
           setDateError('');setAppliedDates({...dates});setRange('custom');setDay(null);
         };
         const refresh = ()=>setRevision(value=>value+1);
+        const jumpToType = route=>{
+          const section=document.getElementById('cu-model-types');
+          const row=document.getElementById(`cu-model-type-${encodeURIComponent(route)}`);
+          if(!section||!row)return;
+          section.open=true;
+          const removed=row.closest('.cu-removed');
+          if(removed)removed.open=true;
+          requestAnimationFrame(()=>{
+            row.scrollIntoView({behavior:'smooth',block:'center'});
+            row.querySelector('[data-model-type="local"]')?.focus({preventScroll:true});
+          });
+        };
         const series = index=>['#2385e8','#56b4c7','#8367d8','#df9973','#6d98b8'][index%5];
         const shown = data?.models||[];
         const circumference = 2*Math.PI*84;
@@ -282,13 +308,13 @@ window.__ModuleLoader__.load({
             h(Heatmap,{days:data.heatmap.filter(item=>(since===0||item.day>=dateKey(new Date(since)))&&(!Number.isFinite(until)||item.day<=dateKey(new Date(until)))),selectedDay:day,selectDay:setDay,t,startDay:range==='custom'?appliedDates.start:null,endDay:range==='custom'?appliedDates.end:null}),
             h('section',{className:'cu-section'},h('div',{className:'cu-section-title'},h('h3',null,t('models'))),shown.length===0?h('p',{className:'cu-muted'},t('empty')):
               h('div',{className:'cu-breakdown'},h('div',{className:'cu-ring',role:'img','aria-label':t('models')},h('svg',{className:'cu-ring-chart',viewBox:'0 0 200 200','aria-hidden':true},h('circle',{cx:100,cy:100,r:84,fill:'none',stroke:'var(--dsw-alias-border-l2)',strokeWidth:26}),arcs),h('div',{className:'cu-ring-center'},compact(data.totals.total),h('small',null,'token'))),
-                hoverModel&&h('div',{className:'cu-ring-tooltip',role:'tooltip',style:{left:hoverModel.left,top:hoverModel.top}},h('strong',null,hoverModel.model.model),h('span',null,`${compact(hoverModel.model.total)} token · ${t('share')} ${(hoverModel.model.total/data.totals.total*100).toFixed(1)}%`)),
+                hoverModel&&h('div',{className:'cu-ring-tooltip',role:'tooltip',style:{left:hoverModel.left,top:hoverModel.top}},h('strong',null,hoverModel.model.displayName||hoverModel.model.model),h('span',null,`${compact(hoverModel.model.total)} token · ${t('share')} ${(hoverModel.model.total/data.totals.total*100).toFixed(1)}%`)),
                 h('div',{className:'cu-model-list'},shown.map((model,index)=>h('article',{className:'cu-model-row',key:model.route,style:{'--cu-model-color':index<5?series(index):'var(--dsw-alias-border-l2)'}},
-                  h('div',{className:'cu-model-head'},h('div',{className:'cu-model-name'},h('span',{className:'cu-model-dot','aria-hidden':true}),model.model),h('div',{className:'cu-model-number'},compact(model.total),h('small',null,'token'))),
-                  h('div',{className:'cu-model-meta'},h('span',{className:'cu-model-badge'},t(model.type)),h('span',{className:'cu-model-sub'},model.provider),h('span',{className:'cu-model-share'},`${t('share')} ${(model.total/data.totals.total*100).toFixed(1)}%`)),
+                  h('div',{className:'cu-model-head'},h('div',{className:'cu-model-name'},h('span',{className:'cu-model-dot','aria-hidden':true}),model.displayName||model.model),h('div',{className:'cu-model-number'},compact(model.total),h('small',null,'token'))),
+                  h('div',{className:'cu-model-meta'},model.type==='unknown'?h('button',{type:'button',className:'cu-model-badge cu-model-type-link','aria-label':`${model.displayName||model.model}：${t('chooseType')}`,title:t('chooseType'),onClick:()=>jumpToType(model.route)},t(model.type)):h('span',{className:'cu-model-badge'},t(model.type)),h('span',{className:'cu-model-sub'},model.provider),h('span',{className:'cu-model-share'},`${t('share')} ${(model.total/data.totals.total*100).toFixed(1)}%`)),
                 ))))),
           ),
-          h('details',{className:'cu-section cu-types'},h('summary',null,t('types')),h('p',{className:'cu-note'},t('typeHint')),h('div',{className:'cu-type-list'},catalog.map(model=>h(ModelPolicy,{key:model.route,model,policy:policies[model.route],t,saved:setPolicies}))),
+          h('details',{className:'cu-section cu-types',id:'cu-model-types'},h('summary',null,t('types')),h('p',{className:'cu-note'},t('typeHint')),h('div',{className:'cu-type-list'},catalog.map(model=>h(ModelPolicy,{key:model.route,model,policy:policies[model.route],t,saved:setPolicies}))),
             removedCatalog.length>0&&h('details',{className:'cu-removed'},h('summary',null,`${t('removed')}（${removedCatalog.length}）`),h('div',{className:'cu-type-list'},removedCatalog.map(model=>h(ModelPolicy,{key:model.route,model,policy:policies[model.route],t,saved:setPolicies,removed:true}))))),
         );
       }

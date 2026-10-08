@@ -40,6 +40,12 @@ test('即时筛选与原来的完整日志汇总一致',()=>{
     }
   }
 });
+test('用量列表优先显示自定义名称，未设置时回退到原模型名',()=>{
+  const namedPolicies={...policies,'local/same':{type:'local',displayName:'Qwen 本地模型'}};
+  const actual=plain(projectSnapshot(snapshot,namedPolicies));
+  assert.equal(actual.models.find(model=>model.route==='local/same').displayName,'Qwen 本地模型');
+  assert.equal(actual.models.find(model=>model.route==='cloud/same').displayName,'same');
+});
 test('类型修改只重算快照，不需要重新读取日志',()=>{
   const next={...policies,'local/same':{type:'api'}};
   assert.equal(projectSnapshot(snapshot,policies,{type:'local'}).totals.total,240);

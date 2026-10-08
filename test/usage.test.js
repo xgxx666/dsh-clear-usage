@@ -65,6 +65,11 @@ test('拒绝负数、非整数和无效单价',()=>{
   assert.equal(sample(event({inputTokens:1.2,outputTokens:1})),null);
   assert.throws(()=>validatePolicy({type:'api',currency:'CNY',input:-1}));
 });
+test('模型显示名称会去空格并限制长度',()=>{
+  assert.equal(validatePolicy({type:'local',currency:'CNY',displayName:'  Qwen 本地  '}).displayName,'Qwen 本地');
+  assert.equal(validatePolicy({type:'local',currency:'CNY',displayName:'   '}).displayName,undefined);
+  assert.throws(()=>validatePolicy({type:'local',currency:'CNY',displayName:'x'.repeat(161)}));
+});
 test('时间和类型筛选不混入其他用量，币种分别累计',()=>{
   const entries=fold([event(usage(),{source:{provider:'a',model:'one'}}),event(usage(),{turn:1,source:{provider:'b',model:'two'}})]).entries;
   const policies={'a/one':{type:'api',currency:'CNY',input:1,output:1,cacheRead:1},'b/two':{type:'api',currency:'USD',input:1,output:1,cacheRead:1}};
