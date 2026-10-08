@@ -120,6 +120,11 @@ window.__ModuleLoader__.load({
 
       function Heatmap({ days, selectedDay, selectDay, t, startDay=null, endDay=null }) {
         const [hover,setHover] = React.useState(null);
+        const calendarRef = React.useRef(null);
+        React.useLayoutEffect(()=>{
+          const calendar=calendarRef.current;
+          if(calendar)calendar.scrollLeft=calendar.scrollWidth;
+        },[]);
         const now = new Date(); now.setHours(0,0,0,0);
         const parseDay = value => { const [year,month,date]=value.split('-').map(Number); return new Date(year,month-1,date); };
         const start = startDay ? parseDay(startDay) : new Date(now);
@@ -145,7 +150,7 @@ window.__ModuleLoader__.load({
           return h('div',{className:'cu-week',key:week},cells);
         });
         return h('section',{className:'cu-section'},h('div',{className:'cu-section-title'},h('h3',null,t('heat'))),
-          h('div',{className:'cu-calendar-scroll'},
+          h('div',{className:'cu-calendar-scroll',ref:calendarRef},
           h('div',{className:'cu-months',style:{gridTemplateColumns:`repeat(${weekCount}, 9px)`}},months.map(({week,label},i)=>h('span',{key:i,className:'cu-month-label',style:{gridColumn:week+1}},label))),
           h('div',{className:'cu-heat',style:{gridTemplateColumns:`repeat(${weekCount}, 9px)`}},weeks),
           ),
