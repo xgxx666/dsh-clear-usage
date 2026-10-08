@@ -1,0 +1,28 @@
+{
+  "name": "dsh-clear-usage",
+  "version": "0.1.0",
+  "description": "简洁的 DSH 用量统计：在设置内查看 token、缓存命中、热力图及模型用量。",
+  "type": "module",
+  "license": "MIT",
+  "repository": { "type": "git", "url": "https://github.com/xgxx666/dsh-clear-usage.git" },
+  "homepage": "https://github.com/xgxx666/dsh-clear-usage#readme",
+  "bugs": { "url": "https://github.com/xgxx666/dsh-clear-usage/issues" },
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": ["index.js", "client.js", "lib", "locale", "cordis.patch.yml", "README.md", "LICENSE"],
+  "scripts": { "test": "node --test test/*.test.js", "check": "node --check index.js && node --check client.js && node --check lib/usage.js" },
+  "engines": { "node": ">=24", "dsh": "^0.2.0-rc.2" },
+  "keywords": ["dsh", "deepseek-harness", "plugin", "token", "usage"],
+  "dsh": {
+    "bundle": { "patch": "./cordis.patch.yml" },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": ["@deepseek-ai/dsh-api-remotes", "@deepseek-ai/dsh-client-ui-settings"]
+    }
+  }
+}
