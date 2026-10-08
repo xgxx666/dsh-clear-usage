@@ -10,7 +10,7 @@ let factory;
 vm.runInNewContext(await fs.readFile(new URL('../client.js', import.meta.url), 'utf8'), {
   window: { __ModuleLoader__: { load: entry => { factory = entry.factory; } } },
 });
-const { projectSnapshot } = factory(() => ({ Component: class {}, createElement() {} }));
+const { projectSnapshot, createSnapshotCache } = factory(() => ({ Component: class {}, createElement() {} }));
 const plain = value => JSON.parse(JSON.stringify(value));
 const midnight = new Date(2026, 9, 8).getTime();
 const events = [
@@ -80,6 +80,45 @@ test('删除管理项不会抹掉历史 token',()=>{
   assert.equal(projectSnapshot(snapshot,hidden).totals.total,projectSnapshot(snapshot,policies).totals.total);
   assert.equal(projectSnapshot(snapshot,hidden).models.length,2);
 });
+test('重复打开保留快照且复用正在进行的读取',async()=>{
+  const responses=[];
+  const cache=createSnapshotCache(()=>new Promise((resolve,reject)=>responses.push({resolve,reject})));
+  const first=cache.load();
+  assert.equal(cache.load(),first);
+  await Promise.resolve();
+  assert.equal(responses.length,1);
+  responses.shift().resolve(snapshot);
+  await first;
+  assert.equal(cache.value,snapshot);
+  const refresh=cache.load();
+  assert.equal(cache.value,snapshot);
+  await Promise.resolve();
+  const updated={...snapshot,updatedAt:2};
+  responses.shift().resolve(updated);
+  await refresh;
+  assert.equal(cache.value,updated);
+});
+test('后台更新不会覆盖刚保存的类型和名称，读取失败仍保留快照',async()=>{
+  const responses=[];
+  const cache=createSnapshotCache(()=>new Promise((resolve,reject)=>responses.push({resolve,reject})));
+  const first=cache.load();
+  await Promise.resolve();
+  responses.shift().resolve(snapshot);
+  await first;
+  const refresh=cache.load();
+  await Promise.resolve();
+  cache.savePolicies({...policies,'local/same':{type:'api',displayName:'刚保存的名称'}});
+  responses.shift().resolve({...snapshot,policies:{...policies,'new/model':{type:'api'}},updatedAt:2});
+  await refresh;
+  assert.deepEqual(plain(cache.value.policies['local/same']),{type:'api',displayName:'刚保存的名称'});
+  assert.equal(cache.value.policies['new/model'].type,'api');
+  const retained=cache.value;
+  const failed=cache.load();
+  await Promise.resolve();
+  responses.shift().reject(new Error('暂时断开'));
+  await assert.rejects(failed,/暂时断开/);
+  assert.equal(cache.value,retained);
+});
 const previousHome=process.env.DSH_HOME;
 process.env.DSH_HOME=path.join(path.dirname(fileURLToPath(import.meta.url)),'unused-snapshot-test-home');
 let apply;
@@ -108,4 +147,39 @@ test('实际宿主快照接口只查询一次会话目录，并且不返回消�
   assert.equal(JSON.stringify(result).includes('secret fixture content'),false);
   for(const type of ['all','local','api'])projectSnapshot(result,policies,{type});
   assert.equal(listCalls,1);assert.equal(readCalls,1);
+});
+test('历史读取最多并行四个会话，并保留失败提示和版本缓存',async()=>{
+  let service,active=0,peak=0,reads=0,disposed=0;
+  const records=Array.from({length:9},(_,id)=>({header:{id:String(id)}}));
+  const revisions=new Map(records.map(record=>[record.header.id,1]));
+  const ctx={
+    sessions:{get:()=>undefined},
+    sessionPersistence:{stat:async id=>({revision:revisions.get(id)})},
+    sessionQuery:{
+      listSessions:async()=>records,
+      observeSession:async id=>{
+        reads++;active++;peak=Math.max(peak,active);
+        const revision=revisions.get(id);
+        await new Promise(resolve=>setTimeout(resolve,10));
+        active--;
+        if(id==='8')throw Object.assign(new Error('旧格式'),{name:'SessionFormatUnsupportedError'});
+        return {revision,events:[{...events[0],data:{...events[0].data,source:{provider:'parallel',model:id},usage:{inputTokens:revision*100,outputTokens:20}}}],inheritedEventCount:0,[Symbol.dispose]:()=>{disposed++;}};
+      },
+    },
+    reflect:{provide:(_key,value)=>{service=value;}},
+    typert:{register:()=>()=>{}},effect:()=>{},
+  };
+  await apply(ctx);
+  const first=await service.snapshot();
+  assert.ok(peak>1&&peak<=4);
+  assert.equal(first.sessions,9);assert.equal(first.failed,1);assert.equal(first.unsupported,1);
+  assert.equal(first.rows.reduce((sum,row)=>sum+row.total,0),960);
+  assert.equal(reads,9);assert.equal(disposed,8);
+  const cached=await service.snapshot();
+  assert.deepEqual(cached.rows,first.rows);
+  assert.equal(reads,10);
+  revisions.set('0',2);
+  const updated=await service.snapshot();
+  assert.equal(updated.rows.reduce((sum,row)=>sum+row.total,0),1060);
+  assert.equal(reads,12);assert.equal(disposed,9);
 });

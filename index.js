@@ -68,15 +68,25 @@ class UsageService {
     let missing = 0;
     let failed = 0;
     let unsupported = 0;
-    for (const record of records) {
-      const id = record.header?.id ?? record.session?.id ?? record.id;
-      try { const result = await this.read(id); entries.push(...result.entries); missing += result.missing; }
-      catch (error) {
-        failed++;
-        for(let cause=error,depth=0;cause&&depth<6;cause=cause.cause,depth++) {
-          if(cause.name==='SessionFormatUnsupportedError'||cause.name==='SessionFormatUnsupportedMigrationError') { unsupported++; break; }
+    const results = new Array(records.length);
+    let next = 0;
+    const worker = async () => {
+      while (next < records.length) {
+        const index = next++;
+        const record = records[index];
+        const id = record.header?.id ?? record.session?.id ?? record.id;
+        try { results[index] = await this.read(id); }
+        catch (error) {
+          failed++;
+          for(let cause=error,depth=0;cause&&depth<6;cause=cause.cause,depth++) {
+            if(cause.name==='SessionFormatUnsupportedError'||cause.name==='SessionFormatUnsupportedMigrationError') { unsupported++; break; }
+          }
         }
       }
+    };
+    await Promise.all(Array.from({ length: Math.min(4, records.length) }, worker));
+    for (const result of results) {
+      if (result) { entries.push(...result.entries); missing += result.missing; }
     }
     return { entries, missing, failed, unsupported, sessions: records.length, updatedAt: Date.now() };
   }

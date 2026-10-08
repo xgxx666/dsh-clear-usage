@@ -11,7 +11,7 @@ window.__ModuleLoader__.load({
     const zh = {
       nav: '用量统计', title: '用量统计', token: 'Token 用量', cache: '缓存命中', input: '未缓存输入', output: '输出', read: '缓存读取', write: '缓存写入', unavailable: '暂无数据',
       today: '今天', month: '本月', allTime: '全部', custom: '自定义', all: '全部模型', local: '本地模型', api: 'API 模型', unknown: '待设置类型',
-      loading: '正在读取用量…', error: '读取失败，请重试', refresh: '刷新', total: '消耗 token',
+      loading: '正在读取用量…', updating: '正在更新用量…', error: '读取失败，请重试', refresh: '刷新', total: '消耗 token',
       heat: 'Token 活动', models: '模型用量', share: '占比', empty: '这段时间没有已记录的用量',
       types: '模型类型', typeHint: '类型用于筛选，点击自动保存；可设置显示名称。用量列表中“待设置类型”可点选后跳转到对应模型。删除只移出管理列表，历史用量保留。', unknownShort: '待确认', localShort: '本地', apiShort: 'API', saving: '保存中…', saved: '已保存', delete: '删除', restore: '恢复', removed: '已删除的模型', displayName: '显示名称', chooseType: '点击选择本地或 API',
       startDate: '开始日期', endDate: '结束日期', query: '查询', invalidDates: '请选择有效日期，结束日期不能早于开始日期。',
@@ -27,6 +27,7 @@ window.__ModuleLoader__.load({
       .cu-root button:focus-visible,.cu-root select:focus-visible,.cu-root input:focus-visible{outline:2px solid var(--cu-ink);outline-offset:2px}
       .cu-note{font-size:11px;color:var(--dsw-alias-label-secondary);margin:8px 0 0}
       .cu-page{padding:4px;max-width:940px;margin:0 auto}.cu-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}.cu-title{margin:0;font-size:18px;font-weight:600}.cu-button{border:1px solid var(--dsw-alias-border-l1);background:var(--cu-bg);border-radius:8px;padding:5px 10px}
+      .cu-top-actions{display:flex;align-items:center;gap:8px}
       .cu-filters{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}.cu-tabs{display:flex;gap:3px;padding:3px;border-radius:9px;background:var(--dsw-alias-bg-layer-2)}.cu-tabs button{background:transparent;border:0;border-radius:6px;padding:4px 11px;color:var(--dsw-alias-label-secondary)}.cu-tabs button[aria-pressed=true]{background:var(--cu-bg);color:var(--dsw-alias-label-primary)}
       .cu-date-range{display:flex;gap:9px;align-items:flex-end;flex-wrap:wrap;margin-bottom:18px}.cu-date-range label{flex:1;min-width:135px;font-size:11px;color:var(--dsw-alias-label-secondary)}.cu-date-range input{display:block;width:100%;margin-top:5px;padding:7px 8px;border:1px solid var(--dsw-alias-border-l1);border-radius:8px;background:var(--cu-bg);color:var(--dsw-alias-label-primary);font:inherit;font-size:12px}.cu-date-range .cu-button{padding:7px 12px}
       .cu-filter{position:relative}.cu-filter-trigger{display:flex;align-items:center;justify-content:space-between;gap:16px;min-width:116px;border:1px solid var(--dsw-alias-border-l1);border-radius:9px;background:var(--cu-bg);padding:7px 11px;font-size:12px;line-height:1.4}.cu-filter-trigger:hover,.cu-filter-trigger[aria-expanded=true]{background:var(--dsw-alias-interactive-bg-hover);border-color:var(--dsw-alias-border-l2)}.cu-filter-arrow{color:var(--dsw-alias-label-secondary);transition:transform .15s}.cu-filter-trigger[aria-expanded=true] .cu-filter-arrow{transform:rotate(180deg)}
@@ -80,6 +81,25 @@ window.__ModuleLoader__.load({
       const input=totals.input+totals.cacheRead+totals.cacheWrite;
       return {totals,models:[...models.values()].sort((a,b)=>b.total-a.total),days:ordered(days),heatmap:ordered(heatmap),cacheRate:input>0?totals.cacheRead/input:null,missing:snapshot.missing,failed:snapshot.failed,unsupported:snapshot.unsupported,sessions:snapshot.sessions,updatedAt:snapshot.updatedAt};
     }
+    function createSnapshotCache(load) {
+      let value = null, pending = null, policyRevision = 0;
+      return {
+        get value() { return value; },
+        load() {
+          if (pending) return pending;
+          const revision = policyRevision;
+          pending = Promise.resolve().then(load).then(result=>{
+            value = revision !== policyRevision && value ? {...result,policies:{...result.policies,...value.policies}} : result;
+            return value;
+          }).finally(()=>{pending=null;});
+          return pending;
+        },
+        savePolicies(policies) {
+          policyRevision++;
+          if (value) value = {...value,policies};
+        },
+      };
+    }
     function unwrap(result) {
       if (result?.ok === false) throw new Error(result.error?.message || '用量接口调用失败');
       return result?.ok === true ? result.value : result;
@@ -103,6 +123,7 @@ window.__ModuleLoader__.load({
         if (!api) throw new Error('用量接口未连接');
         return unwrap(await api[method](...args));
       };
+      const snapshotCache = createSnapshotCache(()=>invoke('snapshot'));
       ctx.effect(() => ctx.locale.register(PACKAGE, { zh }), 'clear-usage: locale');
       ctx.effect(() => {
         let gone = false;
@@ -248,8 +269,8 @@ window.__ModuleLoader__.load({
         const [dates,setDates] = React.useState(()=>({start:dateKey(new Date(startOf('month'))),end:dateKey(new Date())}));
         const [appliedDates,setAppliedDates] = React.useState(dates);
         const [dateError,setDateError] = React.useState('');
-        const [snapshot,setSnapshot] = React.useState(null);
-        const [policies,setPolicies] = React.useState({});
+        const [snapshot,setSnapshot] = React.useState(()=>snapshotCache.value);
+        const [policies,setPolicies] = React.useState(()=>snapshotCache.value?.policies||{});
         const [error,setError] = React.useState('');
         const [loading,setLoading] = React.useState(true);
         const [revision,setRevision] = React.useState(0);
@@ -257,7 +278,7 @@ window.__ModuleLoader__.load({
         React.useEffect(()=> {
           let current = true;
           setLoading(true);setError('');
-          invoke('snapshot').then(result=>{
+          snapshotCache.load().then(result=>{
             if(!current)return;setSnapshot(result);setPolicies(result.policies);
           }).catch(problem=>{if(current)setError(problem.message||t('error'));}).finally(()=>{if(current)setLoading(false);});
           return ()=>{current=false;};
@@ -273,6 +294,7 @@ window.__ModuleLoader__.load({
           setDateError('');setAppliedDates({...dates});setRange('custom');setDay(null);
         };
         const refresh = ()=>setRevision(value=>value+1);
+        const savedPolicies = next=>{snapshotCache.savePolicies(next);setPolicies(next);};
         const jumpToType = route=>{
           const section=document.getElementById('cu-model-types');
           const row=document.getElementById(`cu-model-type-${encodeURIComponent(route)}`);
@@ -297,7 +319,7 @@ window.__ModuleLoader__.load({
         });
         const card = (label,value,sub) => h('div',{className:'cu-card',key:label},h('div',{className:'cu-label'},label),h('div',{className:'cu-value'},value),sub&&h('div',{className:'cu-note'},sub));
         return h('main',{className:'cu-root cu-page'},h('style',null,CSS),
-          h('div',{className:'cu-top'},h('h2',{className:'cu-title'},t('title')),h('button',{type:'button',className:'cu-button',onClick:refresh,disabled:loading},t('refresh'))),
+          h('div',{className:'cu-top'},h('h2',{className:'cu-title'},t('title')),h('div',{className:'cu-top-actions'},loading&&data&&h('span',{className:'cu-muted',role:'status'},t('updating')),h('button',{type:'button',className:'cu-button',onClick:refresh,disabled:loading},t('refresh')))),
           h('div',{className:'cu-filters','aria-label':t('filters')},h('div',{className:'cu-tabs'},['today','month','allTime','custom'].map(key=>h('button',{type:'button',key,'aria-pressed':range===key&&!day,onClick:()=>{setRange(key);setDay(null);}},t(key)))),
             h(ModelFilter,{value:type,onChange:setType,t})),
           range==='custom'&&h('div',{className:'cu-date-range'},h('label',null,t('startDate'),h('input',{type:'date',value:dates.start,onChange:event=>setDates(value=>({...value,start:event.target.value}))})),h('label',null,t('endDate'),h('input',{type:'date',value:dates.end,onChange:event=>setDates(value=>({...value,end:event.target.value}))})),h('button',{type:'button',className:'cu-button',onClick:queryDates},t('query'))),
@@ -309,7 +331,7 @@ window.__ModuleLoader__.load({
             data.unsupported>0&&h('p',{className:'cu-note'},`${t('oldRecords')}（${data.unsupported} 个），${t('recorded')}。`),
             data.failed>data.unsupported&&h('p',{className:'cu-warning'},t('failed')),
             data.missing>0&&h('p',{className:'cu-note'},t('missing')),
-            h(Heatmap,{days:data.heatmap.filter(item=>(since===0||item.day>=dateKey(new Date(since)))&&(!Number.isFinite(until)||item.day<=dateKey(new Date(until)))),selectedDay:day,selectDay:setDay,t,startDay:range==='custom'?appliedDates.start:null,endDay:range==='custom'?appliedDates.end:null}),
+            h(Heatmap,{key:range==='custom'?`${range}:${appliedDates.start}:${appliedDates.end}`:range,days:data.heatmap.filter(item=>(since===0||item.day>=dateKey(new Date(since)))&&(!Number.isFinite(until)||item.day<=dateKey(new Date(until)))),selectedDay:day,selectDay:setDay,t,startDay:range==='custom'?appliedDates.start:null,endDay:range==='custom'?appliedDates.end:null}),
             h('section',{className:'cu-section'},h('div',{className:'cu-section-title'},h('h3',null,t('models'))),shown.length===0?h('p',{className:'cu-muted'},t('empty')):
               h('div',{className:'cu-breakdown'},h('div',{className:'cu-ring',role:'img','aria-label':t('models')},h('svg',{className:'cu-ring-chart',viewBox:'0 0 200 200','aria-hidden':true},h('circle',{cx:100,cy:100,r:84,fill:'none',stroke:'var(--dsw-alias-border-l2)',strokeWidth:26}),arcs),h('div',{className:'cu-ring-center'},compact(data.totals.total),h('small',null,'token'))),
                 hoverModel&&h('div',{className:'cu-ring-tooltip',role:'tooltip',style:{left:hoverModel.left,top:hoverModel.top}},h('strong',null,hoverModel.model.displayName||hoverModel.model.model),h('span',null,`${compact(hoverModel.model.total)} token · ${t('share')} ${(hoverModel.model.total/data.totals.total*100).toFixed(1)}%`)),
@@ -318,13 +340,13 @@ window.__ModuleLoader__.load({
                   h('div',{className:'cu-model-meta'},model.type==='unknown'?h('button',{type:'button',className:'cu-model-badge cu-model-type-link','aria-label':`${model.displayName||model.model}：${t('chooseType')}`,title:t('chooseType'),onClick:()=>jumpToType(model.route)},t(model.type)):h('span',{className:'cu-model-badge'},t(model.type)),h('span',{className:'cu-model-share'},`${t('share')} ${(model.total/data.totals.total*100).toFixed(1)}%`)),
                 ))))),
           ),
-          h('details',{className:'cu-section cu-types',id:'cu-model-types'},h('summary',null,t('types')),h('p',{className:'cu-note'},t('typeHint')),h('div',{className:'cu-type-list'},catalog.map(model=>h(ModelPolicy,{key:model.route,model,policy:policies[model.route],t,saved:setPolicies}))),
-            removedCatalog.length>0&&h('details',{className:'cu-removed'},h('summary',null,`${t('removed')}（${removedCatalog.length}）`),h('div',{className:'cu-type-list'},removedCatalog.map(model=>h(ModelPolicy,{key:model.route,model,policy:policies[model.route],t,saved:setPolicies,removed:true}))))),
+          h('details',{className:'cu-section cu-types',id:'cu-model-types'},h('summary',null,t('types')),h('p',{className:'cu-note'},t('typeHint')),h('div',{className:'cu-type-list'},catalog.map(model=>h(ModelPolicy,{key:model.route,model,policy:policies[model.route],t,saved:savedPolicies}))),
+            removedCatalog.length>0&&h('details',{className:'cu-removed'},h('summary',null,`${t('removed')}（${removedCatalog.length}）`),h('div',{className:'cu-type-list'},removedCatalog.map(model=>h(ModelPolicy,{key:model.route,model,policy:policies[model.route],t,saved:savedPolicies,removed:true}))))),
         );
       }
       const guarded = Component => props=>h(Boundary,null,h(Component,props));
       ctx.slots.inject('settings.section',()=>ctx.slots.register({name:'settings.section',id:PACKAGE,order:55,locale:PACKAGE,label:()=>ctx.locale.bind(PACKAGE)('nav')},guarded(Settings)));
     }
-    return { inject:['slots','locale','remote'],apply,projectSnapshot };
+    return { inject:['slots','locale','remote'],apply,projectSnapshot,createSnapshotCache };
   },
 });
