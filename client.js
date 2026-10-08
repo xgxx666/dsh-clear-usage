@@ -13,6 +13,7 @@ window.__ModuleLoader__.load({
       today: '今天', month: '本月', allTime: '全部', custom: '自定义', all: '全部模型', local: '本地模型', api: 'API 模型', unknown: '待设置类型',
       loading: '正在读取用量…', updating: '正在更新用量…', error: '读取失败，请重试', refresh: '刷新', total: '消耗 token',
       heat: 'Token 活动', models: '模型用量', share: '占比', empty: '这段时间没有已记录的用量',
+      hourly: '24 小时用量', composition: 'Token 构成', calls: '次调用', hourlyHint: '按调用结算时间统计', hourlyUnavailable: '小时数据暂不可用，请刷新；更新插件后需重启 DSH。', cachePartial: '部分调用未报告缓存读取，按 DSH 原生口径计为 0。', notReported: '未报告',
       types: '模型类型', typeHint: '类型用于筛选，点击自动保存；可设置显示名称。用量列表中“待设置类型”可点选后跳转到对应模型。删除只移出管理列表，历史用量保留。', unknownShort: '待确认', localShort: '本地', apiShort: 'API', saving: '保存中…', saved: '已保存', delete: '删除', restore: '恢复', removed: '已删除的模型', displayName: '显示名称', chooseType: '点击选择本地或 API',
       startDate: '开始日期', endDate: '结束日期', query: '查询', invalidDates: '请选择有效日期，结束日期不能早于开始日期。',
       modelType: '模型类型',
@@ -34,6 +35,7 @@ window.__ModuleLoader__.load({
       .cu-filter-menu{position:absolute;right:0;top:calc(100% + 7px);z-index:20;width:172px;padding:5px;border:1px solid var(--dsw-alias-border-l1);border-radius:12px;background:var(--cu-bg);box-shadow:0 8px 24px color-mix(in srgb,var(--dsw-alias-label-primary) 13%,transparent)}.cu-filter-option{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:9px 10px;border:0;border-radius:7px;background:transparent;text-align:left;font-size:12px;line-height:1.4}.cu-filter-option[aria-selected=true]{font-weight:600}.cu-filter-option:hover,.cu-filter-option:focus-visible{background:var(--dsw-alias-interactive-bg-hover);outline:none!important}.cu-filter-check{width:15px;height:15px;color:var(--cu-ink)}
       .cu-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:0 0 22px}.cu-card{padding:17px;border:1px solid var(--dsw-alias-border-l1);border-radius:12px}.cu-label{font-size:12px;color:var(--dsw-alias-label-secondary)}.cu-value{font-size:25px;font-weight:600;margin-top:6px;letter-spacing:-.5px;font-variant-numeric:tabular-nums}.cu-value small{font-size:12px;font-weight:400;letter-spacing:0}
       .cu-section{border-top:1px solid var(--dsw-alias-border-l1);padding:20px 0}.cu-section-title{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:14px}.cu-section h3{margin:0;font-size:13px;font-weight:600}.cu-muted{color:var(--dsw-alias-label-secondary);font-size:12px}
+      .cu-hour-scale{text-align:right;font-size:10px;color:var(--dsw-alias-label-secondary);margin-bottom:6px}.cu-hours{display:grid;grid-template-columns:repeat(24,minmax(0,1fr));gap:4px;height:140px;border-bottom:1px solid var(--dsw-alias-border-l2);background:repeating-linear-gradient(to top,transparent 0,transparent calc(25% - 1px),var(--dsw-alias-border-l1) calc(25% - 1px),var(--dsw-alias-border-l1) 25%)}.cu-hour{height:100%;display:flex;align-items:flex-end;border-radius:4px 4px 0 0;outline-offset:2px}.cu-hour:hover,.cu-hour:focus-visible{background:var(--dsw-alias-interactive-bg-hover);outline:2px solid var(--cu-chart)}.cu-hour-bar{width:100%;border-radius:4px 4px 0 0;background:var(--cu-chart)}.cu-hour-axis{display:flex;justify-content:space-between;font-size:10px;color:var(--dsw-alias-label-secondary);margin-top:7px}.cu-composition{margin-top:23px}.cu-token-bar{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--dsw-alias-border-l1)}.cu-token-segment{height:100%;background:var(--cu-token-color)}.cu-token-legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:12px;margin-top:12px}.cu-token-name{font-size:11px;color:var(--dsw-alias-label-secondary);display:flex;align-items:center;gap:6px}.cu-token-dot{width:7px;height:7px;border-radius:50%;background:var(--cu-token-color)}.cu-token-value{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:3px}.cu-token-value small{font-size:10px;font-weight:400;color:var(--dsw-alias-label-secondary);margin-left:5px}
       .cu-calendar-scroll{max-width:100%;overflow-x:auto;padding:2px 1px 5px}.cu-heat{display:grid;gap:2px;width:max-content}.cu-week{display:grid;grid-template-rows:repeat(7,9px);gap:2px}.cu-day{aspect-ratio:1;border:0;border-radius:3px;padding:0;background:var(--dsw-alias-border-l1);min-width:0;position:relative}.cu-day[data-level="1"]{background:color-mix(in srgb,var(--cu-chart) 18%,var(--cu-bg))}.cu-day[data-level="2"]{background:color-mix(in srgb,var(--cu-chart) 38%,var(--cu-bg))}.cu-day[data-level="3"]{background:color-mix(in srgb,var(--cu-chart) 65%,var(--cu-bg))}.cu-day[data-level="4"]{background:var(--cu-chart)}.cu-day[aria-pressed=true]{outline:2px solid var(--dsw-alias-label-primary);outline-offset:1px}.cu-day:disabled{visibility:hidden;opacity:1}
       .cu-months{display:grid;gap:2px;width:max-content;font-size:10px;color:var(--dsw-alias-label-secondary);margin-bottom:5px}.cu-month-label{white-space:nowrap}
       .cu-heat-tooltip{position:fixed;z-index:1400;transform:translate(-50%,-100%);border-radius:12px;padding:9px 13px;background:#18191c;color:#fff;box-shadow:0 4px 14px #0002;font-size:12px;line-height:1.45;pointer-events:none;white-space:nowrap}.cu-heat-tooltip strong{display:block;font-size:13px;font-weight:600}.cu-heat-tooltip span{display:block;color:#ffffffb3}
@@ -56,7 +58,7 @@ window.__ModuleLoader__.load({
     };
     const dateKey = date => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
     const startOf = range => { const date = new Date(); if (range === 'allTime') return 0; date.setHours(0,0,0,0); if (range === 'month') date.setDate(1); return date.getTime(); };
-    function projectSnapshot(snapshot, policies, {type='all',since=0,until=Infinity,day=null}={}) {
+    function projectSnapshot(snapshot, policies, {type='all',since=0,until=Infinity,day=null,hourlyDay=null}={}) {
       const zero = ()=>({input:0,output:0,cacheRead:0,cacheWrite:0,total:0,requests:0,cacheReported:false,cacheUnreported:false,cacheInputKnown:0,cacheReadKnown:0});
       const add = (target,row)=>{
         for(const key of ['input','output','cacheRead','cacheWrite','total','requests','cacheInputKnown','cacheReadKnown'])target[key]+=row[key];
@@ -78,8 +80,13 @@ window.__ModuleLoader__.load({
         add(days.get(row.day),row);
       }
       const ordered = values=>[...values.values()].sort((a,b)=>a.day.localeCompare(b.day));
+      const hours = hourlyDay && snapshot.hourlyDay===hourlyDay && Array.isArray(snapshot.hourlyRows) ? Array.from({length:24},(_,hour)=>({hour,...zero()})) : null;
+      if(hours)for(const row of snapshot.hourlyRows) {
+        if(row.day!==hourlyDay||!Number.isInteger(row.hour)||row.hour<0||row.hour>23||(type!=='all'&&(policies[row.route]?.type||'unknown')!==type))continue;
+        add(hours[row.hour],row);
+      }
       const input=totals.input+totals.cacheRead+totals.cacheWrite;
-      return {totals,models:[...models.values()].sort((a,b)=>b.total-a.total),days:ordered(days),heatmap:ordered(heatmap),cacheRate:input>0?totals.cacheRead/input:null,missing:snapshot.missing,failed:snapshot.failed,unsupported:snapshot.unsupported,sessions:snapshot.sessions,updatedAt:snapshot.updatedAt};
+      return {totals,hours,models:[...models.values()].sort((a,b)=>b.total-a.total),days:ordered(days),heatmap:ordered(heatmap),cacheRate:input>0?totals.cacheRead/input:null,missing:snapshot.missing,failed:snapshot.failed,unsupported:snapshot.unsupported,sessions:snapshot.sessions,updatedAt:snapshot.updatedAt};
     }
     function createSnapshotCache(load) {
       let value = null, pending = null, policyRevision = 0;
@@ -177,6 +184,45 @@ window.__ModuleLoader__.load({
           h('div',{className:'cu-heat',style:{gridTemplateColumns:`repeat(${weekCount}, 9px)`}},weeks),
           ),
           hover&&h('div',{id:'cu-heat-tooltip',className:'cu-heat-tooltip',role:'tooltip',style:{left:hover.left,top:hover.top}},h('strong',null,hover.date),h('span',null,`${compact(hover.value)} 个 Token`)),
+        );
+      }
+      function TodayActivity({ data, t }) {
+        const [hover,setHover] = React.useState(null);
+        React.useEffect(()=>{
+          const clear = ()=>setHover(null);
+          window.addEventListener('scroll',clear,true);window.addEventListener('resize',clear);
+          return ()=>{window.removeEventListener('scroll',clear,true);window.removeEventListener('resize',clear);};
+        },[]);
+        const maximum = data.hours ? Math.max(...data.hours.map(row=>row.total)) : 0;
+        const parts = [
+          {key:'input',color:'#2385e8'}, {key:'read',field:'cacheRead',color:'#56b4c7'}, {key:'output',color:'#8367d8'},
+          ...(data.totals.cacheWrite>0?[{key:'write',field:'cacheWrite',color:'#df9973'}]:[]),
+        ].map(part=>({...part,value:data.totals[part.field||part.key]}));
+        const interval = hour=>`${String(hour).padStart(2,'0')}:00–${String(hour+1).padStart(2,'0')}:00`;
+        const show = (event,row)=>{
+          const rect=event.currentTarget.getBoundingClientRect();
+          setHover({row,left:Math.max(100,Math.min(window.innerWidth-100,rect.left+rect.width/2)),top:rect.top-8});
+        };
+        return h('section',{className:'cu-section'},
+          h('div',{className:'cu-section-title'},h('h3',null,t('hourly')),h('span',{className:'cu-note'},t('hourlyHint'))),
+          data.hours ? h(React.Fragment,null,
+            h('div',{className:'cu-hour-scale'},`${compact(maximum)} token`),
+            h('div',{className:'cu-hours','aria-label':t('hourly')},data.hours.map(row=>h('div',{
+              key:row.hour,className:'cu-hour',role:'img',tabIndex:0,'aria-label':`${interval(row.hour)} · ${number(row.total)} token · ${row.requests} ${t('calls')}`,
+              'aria-describedby':hover?.row.hour===row.hour?'cu-hour-tooltip':undefined,
+              onMouseEnter:event=>show(event,row),onMouseLeave:()=>setHover(null),onFocus:event=>show(event,row),onBlur:()=>setHover(null),
+            },row.total>0&&h('div',{className:'cu-hour-bar','aria-hidden':true,style:{height:`${row.total/maximum*100}%`,minHeight:3}})))),
+            h('div',{className:'cu-hour-axis','aria-hidden':true},['00:00','06:00','12:00','18:00','24:00'].map(label=>h('span',{key:label},label))),
+            maximum===0&&h('p',{className:'cu-note'},t('empty')),
+            hover&&h('div',{id:'cu-hour-tooltip',className:'cu-heat-tooltip',role:'tooltip',style:{left:hover.left,top:hover.top}},h('strong',null,interval(hover.row.hour)),h('span',null,`${number(hover.row.total)} token · ${hover.row.requests} ${t('calls')}`)),
+          ) : h('p',{className:'cu-muted',role:'status'},t('hourlyUnavailable')),
+          h('div',{className:'cu-composition'},h('div',{className:'cu-section-title'},h('h3',null,t('composition'))),
+            h('div',{className:'cu-token-bar',role:'img','aria-label':parts.map(part=>`${t(part.key)} ${part.key==='read'&&!data.totals.cacheReported?t('notReported'):`${number(part.value)} token`}`).join(' · ')},parts.filter(part=>part.value>0).map(part=>h('div',{key:part.key,className:'cu-token-segment',style:{width:`${part.value/data.totals.total*100}%`,'--cu-token-color':part.color}}))),
+            h('div',{className:'cu-token-legend'},parts.map(part=>h('div',{key:part.key,style:{'--cu-token-color':part.color}},
+              h('div',{className:'cu-token-name'},h('span',{className:'cu-token-dot','aria-hidden':true}),t(part.key)),
+              h('div',{className:'cu-token-value'},part.key==='read'&&!data.totals.cacheReported?t('notReported'):compact(part.value),h('small',null,part.key==='read'&&!data.totals.cacheReported?null:`${data.totals.total?percent(part.value/data.totals.total):'0%'} · token`)),
+            ))),data.totals.cacheUnreported&&h('p',{className:'cu-note'},t('cachePartial')),
+          ),
         );
       }
       function ModelPolicy({ model, policy, saved, t, removed=false }) {
@@ -285,7 +331,8 @@ window.__ModuleLoader__.load({
         },[revision]);
         const since=range==='custom'?new Date(`${appliedDates.start}T00:00:00`).getTime():startOf(range);
         const until=range==='custom'?new Date(`${appliedDates.end}T23:59:59.999`).getTime():Infinity;
-        const data = React.useMemo(()=>snapshot?projectSnapshot(snapshot,policies,{type,since,until,day}):null,[snapshot,policies,type,since,until,day]);
+        const hourlyDay = range==='today' ? dateKey(new Date()) : null;
+        const data = React.useMemo(()=>snapshot?projectSnapshot(snapshot,policies,{type,since,until,day,hourlyDay}):null,[snapshot,policies,type,since,until,day,hourlyDay]);
         const allCatalog = React.useMemo(()=>snapshot?projectSnapshot(snapshot,policies).models:[],[snapshot,policies]);
         const catalog=allCatalog.filter(model=>!policies[model.route]?.hidden);
         const removedCatalog=allCatalog.filter(model=>policies[model.route]?.hidden);
@@ -331,7 +378,7 @@ window.__ModuleLoader__.load({
             data.unsupported>0&&h('p',{className:'cu-note'},`${t('oldRecords')}（${data.unsupported} 个），${t('recorded')}。`),
             data.failed>data.unsupported&&h('p',{className:'cu-warning'},t('failed')),
             data.missing>0&&h('p',{className:'cu-note'},t('missing')),
-            h(Heatmap,{key:range==='custom'?`${range}:${appliedDates.start}:${appliedDates.end}`:range,days:data.heatmap.filter(item=>(since===0||item.day>=dateKey(new Date(since)))&&(!Number.isFinite(until)||item.day<=dateKey(new Date(until)))),selectedDay:day,selectDay:setDay,t,startDay:range==='custom'?appliedDates.start:null,endDay:range==='custom'?appliedDates.end:null}),
+            range==='today'?h(TodayActivity,{key:`${hourlyDay}:${type}`,data,t}):h(Heatmap,{key:range==='custom'?`${range}:${appliedDates.start}:${appliedDates.end}`:range,days:data.heatmap.filter(item=>(since===0||item.day>=dateKey(new Date(since)))&&(!Number.isFinite(until)||item.day<=dateKey(new Date(until)))),selectedDay:day,selectDay:setDay,t,startDay:range==='custom'?appliedDates.start:null,endDay:range==='custom'?appliedDates.end:null}),
             h('section',{className:'cu-section'},h('div',{className:'cu-section-title'},h('h3',null,t('models'))),shown.length===0?h('p',{className:'cu-muted'},t('empty')):
               h('div',{className:'cu-breakdown'},h('div',{className:'cu-ring',role:'img','aria-label':t('models')},h('svg',{className:'cu-ring-chart',viewBox:'0 0 200 200','aria-hidden':true},h('circle',{cx:100,cy:100,r:84,fill:'none',stroke:'var(--dsw-alias-border-l2)',strokeWidth:26}),arcs),h('div',{className:'cu-ring-center'},compact(data.totals.total),h('small',null,'token'))),
                 hoverModel&&h('div',{className:'cu-ring-tooltip',role:'tooltip',style:{left:hoverModel.left,top:hoverModel.top}},h('strong',null,hoverModel.model.displayName||hoverModel.model.model),h('span',null,`${compact(hoverModel.model.total)} token · ${t('share')} ${(hoverModel.model.total/data.totals.total*100).toFixed(1)}%`)),

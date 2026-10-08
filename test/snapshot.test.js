@@ -4,7 +4,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
-import { fold, dashboardRows, summarize } from '../lib/usage.js';
+import { fold, dashboardRows, summarize, dayKey } from '../lib/usage.js';
 
 let factory;
 vm.runInNewContext(await fs.readFile(new URL('../client.js', import.meta.url), 'utf8'), {
@@ -21,12 +21,49 @@ const events = [
 ];
 const entries = fold(events).entries;
 const policies = {'local/same':{type:'local'},'cloud/same':{type:'api'}};
-const snapshot = {rows:dashboardRows(entries),policies,missing:0,failed:0,unsupported:0,sessions:2,updatedAt:1};
+const snapshot = {rows:dashboardRows(entries),hourlyRows:dashboardRows(entries.filter(entry=>entry.day==='2026-10-08'),true),hourlyDay:'2026-10-08',policies,missing:0,failed:0,unsupported:0,sessions:2,updatedAt:1};
 const tokenModel = model => ({route:model.route,type:model.type,total:model.total,input:model.input,output:model.output,cacheRead:model.cacheRead,cacheWrite:model.cacheWrite});
 
 test('按天和连接合并，保留全部已记录 token',()=>{
   assert.equal(snapshot.rows.length,3);
   assert.equal(snapshot.rows.reduce((sum,row)=>sum+row.total,0),entries.reduce((sum,entry)=>sum+entry.total,0));
+});
+test('每小时图补齐 24 小时，与当天总量和模型筛选保持一致',()=>{
+  for(const type of ['all','local','api']) {
+    const actual=plain(projectSnapshot(snapshot,policies,{type,since:midnight,hourlyDay:'2026-10-08'}));
+    assert.equal(actual.hours.length,24);
+    assert.equal(actual.hours.reduce((sum,row)=>sum+row.total,0),actual.totals.total);
+    assert.equal(actual.hours.reduce((sum,row)=>sum+row.requests,0),actual.totals.requests);
+    assert.equal(actual.hours[0].total,0);assert.equal(actual.hours[23].total,0);
+  }
+  const all=projectSnapshot(snapshot,policies,{since:midnight,hourlyDay:'2026-10-08'});
+  assert.equal(all.hours[1].total,240);assert.equal(all.hours[2].total,460);assert.equal(all.hours[3].total,680);
+  const next={...policies,'local/same':{type:'api'}};
+  assert.equal(projectSnapshot(snapshot,next,{type:'local',since:midnight,hourlyDay:'2026-10-08'}).hours[1].total,0);
+  assert.equal(projectSnapshot(snapshot,next,{type:'api',since:midnight,hourlyDay:'2026-10-08'}).hours[1].total,240);
+});
+test('小时归档使用本地结算时间，不混入前后两天或重复调用更新',()=>{
+  const hourlyEntries=fold([
+    {...events[0],time:midnight-1,data:{...events[0].data,turn:0}},
+    {...events[1],time:midnight,data:{...events[1].data,turn:1}},
+    {...events[2],time:midnight+3600000-1,data:{...events[2].data,turn:2}},
+    {...events[2],time:midnight+1800000,data:{...events[2].data,turn:5}},
+    {...events[3],time:midnight+86400000-1,data:{...events[3].data,turn:3}},
+    {...events[3],time:midnight+86400000-1,data:{...events[3].data,turn:3,usage:{inputTokens:400,outputTokens:90,cacheReadTokens:200,cacheWriteTokens:10}}},
+    {...events[3],time:midnight+86400000,data:{...events[3].data,turn:4}},
+  ]).entries;
+  const hourlySnapshot={...snapshot,rows:dashboardRows(hourlyEntries),hourlyRows:dashboardRows(hourlyEntries,true)};
+  const actual=projectSnapshot(hourlySnapshot,policies,{since:midnight,until:midnight+86400000-1,hourlyDay:'2026-10-08'});
+  assert.equal(actual.hours[0].total,1160);assert.equal(actual.hours[23].total,700);
+  const merged=hourlySnapshot.hourlyRows.filter(row=>row.day==='2026-10-08'&&row.hour===0&&row.route==='cloud/same');
+  assert.equal(merged.length,1);assert.equal(merged[0].requests,2);assert.equal(merged[0].total,920);
+  assert.equal(actual.hours[23].requests,1);assert.equal(actual.hours[23].cacheWrite,10);
+  assert.equal(actual.hours.reduce((sum,row)=>sum+row.total,0),actual.totals.total);
+});
+test('旧版本或跨午夜的小时快照明确不可用，不显示假的零值图',()=>{
+  assert.equal(projectSnapshot({...snapshot,hourlyRows:undefined},policies,{hourlyDay:'2026-10-08'}).hours,null);
+  assert.equal(projectSnapshot(snapshot,policies,{hourlyDay:'2026-10-09'}).hours,null);
+  assert.equal(projectSnapshot(snapshot,policies).hours,null);
 });
 test('即时筛选与原来的完整日志汇总一致',()=>{
   for(const type of ['all','local','api']) {
@@ -127,7 +164,8 @@ finally { if(previousHome===undefined)delete process.env.DSH_HOME;else process.e
 
 test('实际宿主快照接口只查询一次会话目录，并且不返回消息正文',async()=>{
   let service,listCalls=0,readCalls=0,disposed=0;
-  const ownEvents=events.map(event=>({...event,data:{...event.data,message:{content:[{type:'text',text:'secret fixture content'}]}}}));
+  const today=new Date();today.setHours(0,0,0,0);
+  const ownEvents=events.map(event=>({...event,time:event.time-midnight+today.getTime(),data:{...event.data,message:{content:[{type:'text',text:'secret fixture content'}]}}}));
   const ctx={
     sessions:{get:id=>id==='one'?{seq:ownEvents.length}:undefined},
     sessionPersistence:{stat:async()=>{throw new Error('实时会话不应查询磁盘');}},
@@ -144,6 +182,10 @@ test('实际宿主快照接口只查询一次会话目录，并且不返回消�
   assert.equal(listCalls,1);assert.equal(readCalls,1);assert.equal(disposed,1);
   assert.equal(result.rows.length,3);
   assert.equal(result.rows.reduce((sum,row)=>sum+row.total,0),summarize(entries).totals.total);
+  assert.equal(result.hourlyDay,dayKey(result.updatedAt));
+  assert.equal(result.hourlyRows.length,3);
+  assert.equal(result.hourlyRows.every(row=>row.day===result.hourlyDay),true);
+  assert.equal(result.hourlyRows.reduce((sum,row)=>sum+row.total,0),1380);
   assert.equal(JSON.stringify(result).includes('secret fixture content'),false);
   for(const type of ['all','local','api'])projectSnapshot(result,policies,{type});
   assert.equal(listCalls,1);assert.equal(readCalls,1);

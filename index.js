@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
-import { fold, summarize, validatePolicy, dashboardRows } from './lib/usage.js';
+import { fold, summarize, validatePolicy, dashboardRows, dayKey } from './lib/usage.js';
 
 const PACKAGE = 'dsh-clear-usage';
 const SERVICE = 'clearUsage';
@@ -92,7 +92,8 @@ class UsageService {
   }
   async snapshot() {
     const { entries, ...status } = await this.collect();
-    return { rows: dashboardRows(entries), policies: await this.policies(), ...status };
+    const hourlyDay = dayKey(status.updatedAt);
+    return { rows: dashboardRows(entries), hourlyRows: dashboardRows(entries.filter(entry=>entry.day===hourlyDay), true), hourlyDay, policies: await this.policies(), ...status };
   }
   async summary(filter = {}) {
     if (!filter || typeof filter !== 'object' || Array.isArray(filter)) throw new TypeError('筛选条件无效');
