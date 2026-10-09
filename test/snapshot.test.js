@@ -114,8 +114,16 @@ test('自定义日期包含开始日和结束日，不能混入其他日期',()=
 });
 test('删除管理项不会抹掉历史 token',()=>{
   const hidden={...policies,'cloud/same':{type:'api',hidden:true}};
-  assert.equal(projectSnapshot(snapshot,hidden).totals.total,projectSnapshot(snapshot,policies).totals.total);
-  assert.equal(projectSnapshot(snapshot,hidden).models.length,2);
+  const actual=projectSnapshot(snapshot,hidden);
+  assert.equal(actual.totals.total,projectSnapshot(snapshot,policies).totals.total);
+  assert.equal(actual.models.length,2);
+  assert.deepEqual(plain(actual.visibleModels.map(model=>model.route)),['local/same']);
+  assert.deepEqual(plain(actual.days),plain(projectSnapshot(snapshot,policies).days));
+  assert.deepEqual(plain(actual.heatmap),plain(projectSnapshot(snapshot,policies).heatmap));
+  assert.equal(projectSnapshot(snapshot,hidden,{type:'api'}).visibleModels.length,0);
+  assert.equal(projectSnapshot(snapshot,{...hidden,'local/same':{type:'local',hidden:true}}).visibleModels.length,0);
+  const restored={...hidden,'cloud/same':{type:'api',hidden:false}};
+  assert.equal(projectSnapshot(snapshot,restored).visibleModels.length,2);
 });
 test('重复打开保留快照且复用正在进行的读取',async()=>{
   const responses=[];

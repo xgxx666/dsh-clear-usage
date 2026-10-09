@@ -14,7 +14,7 @@ window.__ModuleLoader__.load({
       loading: '正在读取用量…', updating: '正在更新用量…', error: '读取失败，请重试', refresh: '刷新', total: '消耗 token',
       heat: 'Token 活动', models: '模型用量', share: '占比', empty: '这段时间没有已记录的用量',
       hourly: '24 小时用量', composition: 'Token 构成', calls: '次调用', hourlyHint: '按调用结算时间统计', hourlyUnavailable: '小时数据暂不可用，请刷新；更新插件后需重启 DSH。', cachePartial: '部分调用未报告缓存读取，按 DSH 原生口径计为 0。', notReported: '未报告',
-      types: '模型类型', typeHint: '类型用于筛选，点击自动保存；可设置显示名称。用量列表中“待设置类型”可点选后跳转到对应模型。删除只移出管理列表，历史用量保留。', unknownShort: '待确认', localShort: '本地', apiShort: 'API', saving: '保存中…', saved: '已保存', delete: '删除', restore: '恢复', removed: '已删除的模型', displayName: '显示名称', chooseType: '点击选择本地或 API',
+      types: '模型类型', typeHint: '类型用于筛选，点击自动保存；可设置显示名称。用量列表中“待设置类型”可点选后跳转到对应模型。删除后从模型列表与圆环图隐藏，历史总用量保留。', unknownShort: '待确认', localShort: '本地', apiShort: 'API', saving: '保存中…', saved: '已保存', delete: '删除', restore: '恢复', removed: '已删除的模型', displayName: '显示名称', chooseType: '点击选择本地或 API',
       startDate: '开始日期', endDate: '结束日期', query: '查询', invalidDates: '请选择有效日期，结束日期不能早于开始日期。',
       modelType: '模型类型',
       missing: '部分记录未提供可用的 token 数据，已记录用量可能不完整', failed: '部分会话读取失败，当前结果不完整',
@@ -86,7 +86,8 @@ window.__ModuleLoader__.load({
         add(hours[row.hour],row);
       }
       const input=totals.input+totals.cacheRead+totals.cacheWrite;
-      return {totals,hours,models:[...models.values()].sort((a,b)=>b.total-a.total),days:ordered(days),heatmap:ordered(heatmap),cacheRate:input>0?totals.cacheRead/input:null,missing:snapshot.missing,failed:snapshot.failed,unsupported:snapshot.unsupported,sessions:snapshot.sessions,updatedAt:snapshot.updatedAt};
+      const orderedModels=[...models.values()].sort((a,b)=>b.total-a.total);
+      return {totals,hours,models:orderedModels,visibleModels:orderedModels.filter(model=>!policies[model.route]?.hidden),days:ordered(days),heatmap:ordered(heatmap),cacheRate:input>0?totals.cacheRead/input:null,missing:snapshot.missing,failed:snapshot.failed,unsupported:snapshot.unsupported,sessions:snapshot.sessions,updatedAt:snapshot.updatedAt};
     }
     function createSnapshotCache(load) {
       let value = null, pending = null, policyRevision = 0;
@@ -341,7 +342,7 @@ window.__ModuleLoader__.load({
           setDateError('');setAppliedDates({...dates});setRange('custom');setDay(null);
         };
         const refresh = ()=>setRevision(value=>value+1);
-        const savedPolicies = next=>{snapshotCache.savePolicies(next);setPolicies(next);};
+        const savedPolicies = next=>{snapshotCache.savePolicies(next);setPolicies(next);setHoverModel(null);};
         const jumpToType = route=>{
           const section=document.getElementById('cu-model-types');
           const row=document.getElementById(`cu-model-type-${encodeURIComponent(route)}`);
@@ -355,11 +356,12 @@ window.__ModuleLoader__.load({
           });
         };
         const series = index=>['#2385e8','#56b4c7','#8367d8','#df9973','#6d98b8'][index%5];
-        const shown = data?.models||[];
+        const shown = data?.visibleModels||[];
+        const shownTotal = shown.reduce((total,model)=>total+model.total,0);
         const circumference = 2*Math.PI*84;
         let offset = 0;
         const arcs = shown.slice(0,5).map((model,index)=>{
-          const length = data.totals.total?model.total/data.totals.total*circumference:0;
+          const length = shownTotal?model.total/shownTotal*circumference:0;
           const arc = h('circle',{key:model.route,cx:100,cy:100,r:84,fill:'none',stroke:series(index),strokeWidth:26,strokeDasharray:`${length} ${circumference-length}`,strokeDashoffset:-offset,transform:'rotate(-90 100 100)',style:{cursor:'pointer',pointerEvents:'stroke'},onMouseEnter:event=>{const rect=event.currentTarget.getBoundingClientRect();setHoverModel({model,left:rect.left+rect.width/2,top:rect.top-8});},onMouseLeave:()=>setHoverModel(null)},h('title',null,`${model.model} · ${number(model.total)} token`));
           offset+=length;
           return arc;
@@ -380,11 +382,11 @@ window.__ModuleLoader__.load({
             data.missing>0&&h('p',{className:'cu-note'},t('missing')),
             range==='today'?h(TodayActivity,{key:`${hourlyDay}:${type}`,data,t}):h(Heatmap,{key:range==='custom'?`${range}:${appliedDates.start}:${appliedDates.end}`:range,days:data.heatmap.filter(item=>(since===0||item.day>=dateKey(new Date(since)))&&(!Number.isFinite(until)||item.day<=dateKey(new Date(until)))),selectedDay:day,selectDay:setDay,t,startDay:range==='custom'?appliedDates.start:null,endDay:range==='custom'?appliedDates.end:null}),
             h('section',{className:'cu-section'},h('div',{className:'cu-section-title'},h('h3',null,t('models'))),shown.length===0?h('p',{className:'cu-muted'},t('empty')):
-              h('div',{className:'cu-breakdown'},h('div',{className:'cu-ring',role:'img','aria-label':t('models')},h('svg',{className:'cu-ring-chart',viewBox:'0 0 200 200','aria-hidden':true},h('circle',{cx:100,cy:100,r:84,fill:'none',stroke:'var(--dsw-alias-border-l2)',strokeWidth:26}),arcs),h('div',{className:'cu-ring-center'},compact(data.totals.total),h('small',null,'token'))),
-                hoverModel&&h('div',{className:'cu-ring-tooltip',role:'tooltip',style:{left:hoverModel.left,top:hoverModel.top}},h('strong',null,hoverModel.model.displayName||hoverModel.model.model),h('span',null,`${compact(hoverModel.model.total)} token · ${t('share')} ${(hoverModel.model.total/data.totals.total*100).toFixed(1)}%`)),
+              h('div',{className:'cu-breakdown'},h('div',{className:'cu-ring',role:'img','aria-label':t('models')},h('svg',{className:'cu-ring-chart',viewBox:'0 0 200 200','aria-hidden':true},h('circle',{cx:100,cy:100,r:84,fill:'none',stroke:'var(--dsw-alias-border-l2)',strokeWidth:26}),arcs),h('div',{className:'cu-ring-center'},compact(shownTotal),h('small',null,'token'))),
+                hoverModel&&h('div',{className:'cu-ring-tooltip',role:'tooltip',style:{left:hoverModel.left,top:hoverModel.top}},h('strong',null,hoverModel.model.displayName||hoverModel.model.model),h('span',null,`${compact(hoverModel.model.total)} token · ${t('share')} ${(hoverModel.model.total/shownTotal*100).toFixed(1)}%`)),
                 h('div',{className:'cu-model-list'},shown.map((model,index)=>h('article',{className:'cu-model-row',key:model.route,style:{'--cu-model-color':index<5?series(index):'var(--dsw-alias-border-l2)'}},
                   h('div',{className:'cu-model-head'},h('div',{className:'cu-model-name'},h('span',{className:'cu-model-dot','aria-hidden':true}),model.displayName||model.model),h('div',{className:'cu-model-number'},compact(model.total),h('small',null,'token'))),
-                  h('div',{className:'cu-model-meta'},model.type==='unknown'?h('button',{type:'button',className:'cu-model-badge cu-model-type-link','aria-label':`${model.displayName||model.model}：${t('chooseType')}`,title:t('chooseType'),onClick:()=>jumpToType(model.route)},t(model.type)):h('span',{className:'cu-model-badge'},t(model.type)),h('span',{className:'cu-model-share'},`${t('share')} ${(model.total/data.totals.total*100).toFixed(1)}%`)),
+                  h('div',{className:'cu-model-meta'},model.type==='unknown'?h('button',{type:'button',className:'cu-model-badge cu-model-type-link','aria-label':`${model.displayName||model.model}：${t('chooseType')}`,title:t('chooseType'),onClick:()=>jumpToType(model.route)},t(model.type)):h('span',{className:'cu-model-badge'},t(model.type)),h('span',{className:'cu-model-share'},`${t('share')} ${(model.total/shownTotal*100).toFixed(1)}%`)),
                 ))))),
           ),
           h('details',{className:'cu-section cu-types',id:'cu-model-types'},h('summary',null,t('types')),h('p',{className:'cu-note'},t('typeHint')),h('div',{className:'cu-type-list'},catalog.map(model=>h(ModelPolicy,{key:model.route,model,policy:policies[model.route],t,saved:savedPolicies}))),
