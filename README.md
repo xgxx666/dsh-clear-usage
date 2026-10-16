@@ -6,7 +6,7 @@
 dsh plugin --profile web add github:xgxx666/dsh-clear-usage
 ```
 
-适用于 DSH `0.2.0-rc.2` 及更高兼容版本的 Web profile。Node.js 运行范围与 DSH 一致：`^22.19.0 || >=24.0.0`。
+适用于 DSH `0.2.0-rc.2` 及更高兼容版本的 Web profile。Node.js 运行范围与 DSH 宿主声明一致，依据是 deepseek-harness monorepo 根 `package.json`（已发布的 dsh 包本身不含 `engines` 字段）：`^22.19.0 || >=24.0.0`。
 
 ## 使用位置
 
